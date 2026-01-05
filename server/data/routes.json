@@ -1,0 +1,142 @@
+[
+  {
+    "id": "R001",
+    "from_city": "Hà Nội",
+    "to_city": "Hải Phòng",
+    "distance_km": 120,
+    "base_price": 150000
+  },
+  {
+    "id": "R002",
+    "from_city": "Hà Nội",
+    "to_city": "Ninh Bình",
+    "distance_km": 95,
+    "base_price": 120000
+  },
+  {
+    "id": "R003",
+    "from_city": "Hà Nội",
+    "to_city": "Nam Định",
+    "distance_km": 90,
+    "base_price": 110000
+  },
+  {
+    "id": "R004",
+    "from_city": "Hà Nội",
+    "to_city": "Thanh Hóa",
+    "distance_km": 160,
+    "base_price": 180000
+  },
+  {
+    "id": "R005",
+    "from_city": "TP Hồ Chí Minh",
+    "to_city": "Vũng Tàu",
+    "distance_km": 125,
+    "base_price": 140000
+  },
+  {
+    "id": "R006",
+    "from_city": "TP Hồ Chí Minh",
+    "to_city": "Đà Lạt",
+    "distance_km": 308,
+    "base_price": 250000
+  },
+  {
+    "id": "R007",
+    "from_city": "TP Hồ Chí Minh",
+    "to_city": "Cần Thơ",
+    "distance_km": 169,
+    "base_price": 160000
+  },
+  {
+    "id": "R008",
+    "from_city": "Đà Nẵng",
+    "to_city": "Huế",
+    "distance_km": 105,
+    "base_price": 130000
+  },
+  {
+    "id": "R009",
+    "from_city": "Đà Nẵng",
+    "to_city": "Hội An",
+    "distance_km": 30,
+    "base_price": 50000
+  },
+  {
+    "id": "R010",
+    "from_city": "Hải Phòng",
+    "to_city": "Hạ Long",
+    "distance_km": 55,
+    "base_price": 80000
+  },
+  {
+    "id": "R011",
+    "from_city": "Hà Nội",
+    "to_city": "Sapa",
+    "distance_km": 320,
+    "base_price": 350000
+  },
+  {
+    "id": "R012",
+    "from_city": "Hà Nội",
+    "to_city": "Hạ Long",
+    "distance_km": 160,
+    "base_price": 200000
+  },
+  {
+    "id": "R013",
+    "from_city": "Hà Nội",
+    "to_city": "Lào Cai",
+    "distance_km": 295,
+    "base_price": 300000
+  },
+  {
+    "id": "R014",
+    "from_city": "TP Hồ Chí Minh",
+    "to_city": "Nha Trang",
+    "distance_km": 435,
+    "base_price": 350000
+  },
+  {
+    "id": "R015",
+    "from_city": "TP Hồ Chí Minh",
+    "to_city": "Phan Thiết",
+    "distance_km": 198,
+    "base_price": 180000
+  },
+  {
+    "id": "R016",
+    "from_city": "TP Hồ Chí Minh",
+    "to_city": "Biên Hòa",
+    "distance_km": 32,
+    "base_price": 50000
+  },
+  {
+    "id": "R017",
+    "from_city": "TP Hồ Chí Minh",
+    "to_city": "Long An",
+    "distance_km": 45,
+    "base_price": 60000
+  },
+  {
+    "id": "R018",
+    "from_city": "Đà Nẵng",
+    "to_city": "Quảng Ngãi",
+    "distance_km": 125,
+    "base_price": 150000
+  },
+  {
+    "id": "R019",
+    "from_city": "Đà Nẵng",
+    "to_city": "Quy Nhơn",
+    "distance_km": 305,
+    "base_price": 280000
+  },
+  {
+    "id": "R020",
+    "from_city": "Hà Nội",
+    "to_city": "Vinh",
+    "distance_km": 290,
+    "base_price": 280000
+  }
+]
