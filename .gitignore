@@ -1,0 +1,43 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+venv/
+env/
+ENV/
+
+# SSL Certificates (BẢO MẬT - KHÔNG COMMIT)
+server/*.crt
+server/*.key
+server/*.pem
+*.crt
+*.key
+*.pem
+
+# Data files (có thể ignore nếu muốn)
+# server/data/
+
+# Uploads
+server/uploads/*
+!server/uploads/.gitkeep
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Environment variables
+.env
+.env.local
+.env.*.local
+

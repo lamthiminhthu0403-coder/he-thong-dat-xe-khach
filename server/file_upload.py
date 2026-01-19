@@ -9,6 +9,8 @@ Chức năng:
 import os
 import hashlib
 from typing import Dict
+from image_processor import ImageProcessor
+from config import MULTIMEDIA_CONFIG
 
 
 class FileUploadHandler:
@@ -22,7 +24,8 @@ class FileUploadHandler:
             os.makedirs(self.upload_dir)
             print(f"[FileUpload] Đã tạo thư mục: {self.upload_dir}")
     
-    def save_file(self, filename: str, file_data: bytes, booking_id: str = None) -> Dict:
+    def save_file(self, filename: str, file_data: bytes, booking_id: str = None, 
+                  compress_image: bool = True) -> Dict:
         """Lưu file vào thư mục uploads
         
         Args:
@@ -34,9 +37,29 @@ class FileUploadHandler:
             {'success': bool, 'filepath': str, 'message': str}
         """
         try:
+            # Kiểm tra kích thước file
+            max_size = MULTIMEDIA_CONFIG['max_file_size']
+            if len(file_data) > max_size:
+                return {
+                    'success': False,
+                    'filepath': None,
+                    'message': f'File quá lớn. Kích thước tối đa: {max_size // 1024 // 1024}MB'
+                }
+            
+            # Xử lý ảnh: compress nếu là ảnh
+            original_size = len(file_data)
+            base_name, ext = os.path.splitext(filename)
+            
+            if compress_image and ext.lower() in ['.jpg', '.jpeg', '.png', '.gif']:
+                # Kiểm tra xem có phải ảnh hợp lệ không
+                if ImageProcessor.validate_image(file_data):
+                    compressed = ImageProcessor.compress_image(file_data)
+                    if compressed:
+                        file_data = compressed
+                        print(f"[FileUpload] Đã nén ảnh: {original_size} → {len(file_data)} bytes")
+            
             # Tạo tên file duy nhất (thêm hash để tránh trùng)
             file_hash = hashlib.md5(file_data).hexdigest()[:8]
-            base_name, ext = os.path.splitext(filename)
             
             if booking_id:
                 unique_filename = f"{booking_id}_{base_name}_{file_hash}{ext}"

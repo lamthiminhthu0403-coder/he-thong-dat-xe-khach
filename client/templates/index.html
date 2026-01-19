@@ -23,14 +23,105 @@
                 </svg>
                 <h1>Xe Khách Trực Tuyến</h1>
             </div>
-            <div class="connection-status" id="connectionStatus">
-                <span class="status-dot"></span>
-                <span>Kết nối</span>
+            <div style="display: flex; align-items: center; gap: 15px;">
+                <button id="helpVideoBtn" class="btn-help" onclick="showHelpVideo()" title="Xem video hướng dẫn">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <polygon points="10 8 16 12 10 16 10 8"></polygon>
+                    </svg>
+                    <span>Hướng dẫn</span>
+                </button>
+                <div class="connection-status" id="connectionStatus">
+                    <span class="status-dot"></span>
+                    <span>Kết nối</span>
+                </div>
             </div>
         </header>
+        
+        <!-- Video Modal -->
+        <div id="videoModal" class="video-modal" style="display: none;">
+            <div class="video-modal-content">
+                <div class="video-modal-header">
+                    <h3>Video Hướng Dẫn</h3>
+                    <button class="video-modal-close" onclick="closeHelpVideo()">&times;</button>
+                </div>
+                <div class="video-modal-body">
+                    <div id="videoContainer">
+                        <video id="helpVideo" controls preload="metadata" style="width: 100%; max-width: 800px; background: #000;">
+                            <source src="{{ url_for('static', filename='videos/guide.mp4') }}" type="video/mp4">
+                            Trình duyệt của bạn không hỗ trợ video HTML5.
+                        </video>
+                        <p id="videoStatus" style="margin-top: 15px; color: #6b7280; text-align: center;">
+                            Video hướng dẫn sử dụng hệ thống đặt vé
+                        </p>
+                        <div id="videoError" style="display: none; margin-top: 10px; padding: 15px; background: #fef2f2; border-radius: 8px; border-left: 4px solid #ef4444;">
+                            <p style="color: #dc2626; margin: 0; font-size: 14px;">
+                                ⚠️ Không thể tải video. Vui lòng kiểm tra:
+                                <br>- File <code>guide.mp4</code> có tồn tại trong <code>client/static/videos/</code> không?
+                                <br>- File có định dạng MP4 hợp lệ không?
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
 
         <!-- Main Content -->
         <main class="main-content">
+            <!-- Features Info Panel -->
+            <div class="features-panel" id="featuresPanel">
+                <div class="features-header">
+                    <h3>✨ Các tính năng đã có</h3>
+                    <button class="features-toggle" onclick="toggleFeaturesPanel()">
+                        <span id="featuresToggleIcon">▼</span>
+                    </button>
+                </div>
+                <div class="features-content" id="featuresContent">
+                    <div class="feature-item">
+                        <div class="feature-icon">📧</div>
+                        <div class="feature-info">
+                            <strong>Email Xác Nhận</strong>
+                            <p>Nhận email xác nhận khi đặt vé thành công (có thể nhập email trong form)</p>
+                        </div>
+                    </div>
+                    <div class="feature-item">
+                        <div class="feature-icon">🔒</div>
+                        <div class="feature-info">
+                            <strong>Bảo Mật SSL/TLS</strong>
+                            <p>Kết nối được mã hóa để bảo vệ thông tin của bạn</p>
+                        </div>
+                    </div>
+                    <div class="feature-item">
+                        <div class="feature-icon">📸</div>
+                        <div class="feature-info">
+                            <strong>Upload Ảnh CCCD</strong>
+                            <p>Tự động nén ảnh khi upload để tiết kiệm dung lượng</p>
+                        </div>
+                    </div>
+                    <div class="feature-item">
+                        <div class="feature-icon">🔔</div>
+                        <div class="feature-info">
+                            <strong>Thông Báo Âm Thanh</strong>
+                            <p>Phát âm thanh khi đặt vé thành công hoặc có lỗi</p>
+                        </div>
+                    </div>
+                    <div class="feature-item">
+                        <div class="feature-icon">📹</div>
+                        <div class="feature-info">
+                            <strong>Video Hướng Dẫn</strong>
+                            <p>Xem video hướng dẫn sử dụng (nút "Hướng dẫn" ở header)</p>
+                        </div>
+                    </div>
+                    <div class="feature-item">
+                        <div class="feature-icon">⚡</div>
+                        <div class="feature-info">
+                            <strong>Cập Nhật Realtime</strong>
+                            <p>Thông tin ghế được cập nhật realtime qua WebSocket</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <!-- Bước 1: Chọn tuyến -->
             <section class="step" id="step1">
                 <div class="step-header">
@@ -143,6 +234,10 @@
                         <label>Số CCCD *</label>
                         <input type="text" id="customerCCCD" required class="text-input">
                     </div>
+                    <div class="form-group">
+                        <label>Email <span style="color: #6b7280; font-weight: normal;">(để nhận xác nhận đặt vé)</span></label>
+                        <input type="email" id="customerEmail" class="text-input" placeholder="email@example.com">
+                    </div>
 
                     <div class="form-group">
                         <label>Upload ảnh CCCD / Giấy tờ (tùy chọn)</label>
@@ -164,7 +259,23 @@
                     <div class="success-icon">&#10004;</div>
                     <h2>Đặt Vé Thành Công!</h2>
                     <div id="bookingResult"></div>
-                    <button class="btn-primary" onclick="location.reload()">
+                    
+                    <!-- Thông tin các tính năng đã sử dụng -->
+                    <div class="features-used" style="margin-top: 25px; padding: 20px; background: #f0fdf4; border-radius: 12px; border-left: 4px solid #22c55e; text-align: left;">
+                        <h4 style="margin: 0 0 15px 0; color: #166534; font-size: 16px;">✨ Các tính năng đã áp dụng:</h4>
+                        <div style="display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 15px;">
+                            <span class="feature-badge">📧 Email Xác Nhận</span>
+                            <span class="feature-badge">🔒 SSL/TLS Encryption</span>
+                            <span class="feature-badge">📸 Image Upload & Compression</span>
+                            <span class="feature-badge">🔔 Audio Notification</span>
+                            <span class="feature-badge">⚡ Realtime Updates</span>
+                        </div>
+                        <p style="margin: 0; color: #166534; font-size: 14px;">
+                            💡 <strong>Mẹo:</strong> Bạn có thể xem video hướng dẫn bằng nút "Hướng dẫn" ở header
+                        </p>
+                    </div>
+                    
+                    <button class="btn-primary" onclick="location.reload()" style="margin-top: 20px;">
                         Đặt vé mới
                     </button>
                 </div>
@@ -172,7 +283,7 @@
         </main>
     </div>
 
-    <script src="{{ url_for('static', filename='app.js') }}?v=4"></script>
+    <script src="{{ url_for('static', filename='app.js') }}?v=5"></script>
 </body>
 
 </html>

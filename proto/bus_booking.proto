@@ -1,0 +1,166 @@
+syntax = "proto3";
+
+package bus_booking;
+
+// Bus Booking Service - gRPC API
+service BusBookingService {
+  // Lấy danh sách thành phố
+  rpc GetCities(Empty) returns (CitiesResponse);
+  
+  // Tìm kiếm tuyến đường
+  rpc SearchRoutes(SearchRoutesRequest) returns (RoutesResponse);
+  
+  // Lấy ngày có chuyến
+  rpc GetDates(GetDatesRequest) returns (DatesResponse);
+  
+  // Tìm kiếm chuyến xe
+  rpc SearchTrips(SearchTripsRequest) returns (TripsResponse);
+  
+  // Lấy trạng thái ghế
+  rpc GetSeats(GetSeatsRequest) returns (SeatsResponse);
+  
+  // Chọn ghế
+  rpc SelectSeat(SelectSeatRequest) returns (SelectSeatResponse);
+  
+  // Bỏ chọn ghế
+  rpc UnselectSeat(UnselectSeatRequest) returns (SelectSeatResponse);
+  
+  // Đặt vé
+  rpc BookSeats(BookSeatsRequest) returns (BookSeatsResponse);
+  
+  // Upload file
+  rpc UploadFile(UploadFileRequest) returns (UploadFileResponse);
+  
+  // Stream realtime seat updates
+  rpc StreamSeatUpdates(StreamRequest) returns (stream SeatUpdate);
+}
+
+// ============================================
+// Messages
+// ============================================
+
+message Empty {}
+
+message CitiesResponse {
+  repeated string from_cities = 1;
+  repeated string to_cities = 2;
+}
+
+message SearchRoutesRequest {
+  string from_city = 1;
+  string to_city = 2;
+}
+
+message Route {
+  string id = 1;
+  string from_city = 2;
+  string to_city = 3;
+  int32 distance_km = 4;
+  int64 base_price = 5;
+}
+
+message RoutesResponse {
+  repeated Route routes = 1;
+}
+
+message GetDatesRequest {
+  string route_id = 1;
+}
+
+message DatesResponse {
+  repeated string dates = 1;
+}
+
+message SearchTripsRequest {
+  string route_id = 1;
+  string date = 2;
+}
+
+message Trip {
+  string id = 1;
+  string route_id = 2;
+  string date = 3;
+  string departure_time = 4;
+  string bus_code = 5;
+  string bus_type = 6;
+  int32 total_seats = 7;
+  int32 available_seats = 8;
+}
+
+message TripsResponse {
+  repeated Trip trips = 1;
+}
+
+message GetSeatsRequest {
+  string trip_id = 1;
+}
+
+message SeatStatus {
+  string status = 1;  // available, selecting, booked
+  string locked_by = 2;
+  int64 locked_until = 3;
+}
+
+message SeatsResponse {
+  map<string, SeatStatus> seats = 1;
+}
+
+message SelectSeatRequest {
+  string trip_id = 1;
+  string seat_id = 2;
+  string session_id = 3;
+}
+
+message SelectSeatResponse {
+  bool success = 1;
+  string message = 2;
+}
+
+message UnselectSeatRequest {
+  string trip_id = 1;
+  string seat_id = 2;
+  string session_id = 3;
+}
+
+message CustomerInfo {
+  string name = 1;
+  string phone = 2;
+  string cccd = 3;
+  string email = 4;
+}
+
+message BookSeatsRequest {
+  string trip_id = 1;
+  repeated string seat_ids = 2;
+  CustomerInfo customer_info = 3;
+  string session_id = 4;
+}
+
+message BookSeatsResponse {
+  bool success = 1;
+  string booking_id = 2;
+  string message = 3;
+}
+
+message UploadFileRequest {
+  string filename = 1;
+  bytes file_data = 2;
+  string booking_id = 3;
+}
+
+message UploadFileResponse {
+  bool success = 1;
+  string filepath = 2;
+  string message = 3;
+}
+
+message StreamRequest {
+  repeated string trip_ids = 1;  // Filter by trip IDs (empty = all)
+}
+
+message SeatUpdate {
+  string trip_id = 1;
+  map<string, SeatStatus> seats = 2;
+  int64 timestamp = 3;
+}
+

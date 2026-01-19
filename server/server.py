@@ -17,6 +17,8 @@ from trip_manager import TripManager
 from seat_manager import SeatManager
 from booking_manager import BookingManager
 from file_upload import FileUploadHandler
+from email_service import EmailService
+from config import SERVER_CONFIG, EMAIL_CONFIG
 
 
 class BusBookingServer:
@@ -31,7 +33,29 @@ class BusBookingServer:
         self.route_manager = RouteManager(self.data_dir)
         self.trip_manager = TripManager(self.data_dir)
         self.seat_manager = SeatManager(self.data_dir)
-        self.booking_manager = BookingManager(self.data_dir)
+        
+        # Initialize Email Service (optional - từ environment variables)
+        # Khởi tạo Email Service với config từ environment variables
+        self.email_service = EmailService(
+            smtp_server=EMAIL_CONFIG['smtp_server'],
+            smtp_port=EMAIL_CONFIG['smtp_port'],
+            username=EMAIL_CONFIG['username'],
+            password=EMAIL_CONFIG['password'],
+            use_tls=EMAIL_CONFIG['use_tls']
+        )
+        
+        # Debug: In ra config để kiểm tra
+        if not self.email_service.enabled:
+            print("[Server] ⚠️ Email service chưa được cấu hình")
+            print(f"[Server] EMAIL_USERNAME: {'Đã set' if EMAIL_CONFIG['username'] else 'Chưa set'}")
+            print(f"[Server] EMAIL_PASSWORD: {'Đã set' if EMAIL_CONFIG['password'] else 'Chưa set'}")
+            print("[Server] 💡 Để cấu hình email, set environment variables:")
+            print("   set EMAIL_USERNAME=your-email@gmail.com")
+            print("   set EMAIL_PASSWORD=your-app-password")
+        else:
+            print(f"[Server] ✅ Email service đã được cấu hình: {EMAIL_CONFIG['username']}")
+        
+        self.booking_manager = BookingManager(self.data_dir, email_service=self.email_service)
         self.file_handler = FileUploadHandler(self.upload_dir)
         
         self.tcp_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -55,6 +79,21 @@ class BusBookingServer:
         
         threading.Thread(target=self.udp_broadcast_loop, daemon=True).start()
         threading.Thread(target=self.cleanup_loop, daemon=True).start()
+        
+        # Start gRPC server (optional - nếu muốn dùng)
+        try:
+            grpc_enabled = os.getenv('GRPC_ENABLED', 'false').lower() == 'true'
+            if grpc_enabled:
+                from grpc_server import serve_grpc
+                self.grpc_server = serve_grpc(self, port=SERVER_CONFIG['grpc_port'])
+                print(f"[Server] ✅ gRPC server đã khởi động trên port {SERVER_CONFIG['grpc_port']}")
+        except ImportError:
+            # gRPC chưa được cài hoặc chưa generate proto files
+            pass
+        except Exception as e:
+            print(f"[Server] ⚠️ Không thể khởi động gRPC server: {e}")
+            print(f"[Server] 💡 Gợi ý: Cài grpcio và generate proto files nếu muốn dùng gRPC")
+        
         print("\n[Server] Sẵn sàng phục vụ!\n")
         
         while self.running:
@@ -166,13 +205,31 @@ class BusBookingServer:
                     print(f"[Profiling] Book Existing took {time.time()-t_start:.4f}s")
                     return seat_res
 
-                booking_res = self.booking_manager.create_booking(request.get('trip_id'), request.get('seat_ids'), request.get('customer_info'))
+                # Lấy thông tin trip và route để gửi email
+                trip_id = request.get('trip_id')
+                trip_info = self.trip_manager.get_trip_by_id(trip_id)
+                route_info = None
+                if trip_info:
+                    route_info = self.route_manager.get_route_by_id(trip_info.get('route_id'))
+                
+                booking_res = self.booking_manager.create_booking(
+                    trip_id,
+                    request.get('seat_ids'),
+                    request.get('customer_info'),
+                    trip_info=trip_info,
+                    route_info=route_info
+                )
                 print(f"[Profiling] Book New took {time.time()-t_start:.4f}s")
                 return booking_res
                 
             return seat_res
         elif command == 'UPLOAD_FILE':
             return self.file_handler.save_file(request.get('filename'), bytes.fromhex(request.get('file_data')), request.get('booking_id'))
+        elif command == 'GET_TRIP_INFO':
+            trip_info = self.trip_manager.get_trip_by_id(request.get('trip_id'))
+            if trip_info:
+                return {'success': True, 'trip': trip_info}
+            return {'success': False, 'error': 'Trip not found'}
         return {'error': f'Unknown command: {command}'}
     
     def udp_broadcast_loop(self):

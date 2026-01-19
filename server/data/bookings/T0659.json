@@ -1,0 +1,15 @@
+[
+  {
+    "id": "BKA2ED8F41",
+    "trip_id": "T0659",
+    "seat_ids": [
+      "T1-A04"
+    ],
+    "customer_name": "Minh Thư",
+    "customer_phone": "0955673201",
+    "customer_cccd": "0400123456758",
+    "uploaded_files": [],
+    "booking_time": "2026-01-19T10:41:12.372110",
+    "status": "confirmed"
+  }
+]

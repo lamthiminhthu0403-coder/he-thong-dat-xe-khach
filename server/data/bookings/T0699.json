@@ -1,0 +1,15 @@
+[
+  {
+    "id": "BK796EA70E",
+    "trip_id": "T0699",
+    "seat_ids": [
+      "T1-A08"
+    ],
+    "customer_name": "ưewww",
+    "customer_phone": "223234343",
+    "customer_cccd": "4232323232323",
+    "uploaded_files": [],
+    "booking_time": "2026-01-19T10:10:17.020044",
+    "status": "confirmed"
+  }
+]

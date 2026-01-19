@@ -1,0 +1,15 @@
+[
+  {
+    "id": "BK95E6A4D2",
+    "trip_id": "T0041",
+    "seat_ids": [
+      "T1-A09"
+    ],
+    "customer_name": "www",
+    "customer_phone": "232",
+    "customer_cccd": "1212121",
+    "uploaded_files": [],
+    "booking_time": "2026-01-19T11:06:07.887721",
+    "status": "confirmed"
+  }
+]

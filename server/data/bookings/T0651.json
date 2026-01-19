@@ -1,0 +1,28 @@
+[
+  {
+    "id": "BK8A40BDB2",
+    "trip_id": "T0651",
+    "seat_ids": [
+      "T1-A09"
+    ],
+    "customer_name": "www",
+    "customer_phone": "1212121",
+    "customer_cccd": "1212121212121",
+    "uploaded_files": [],
+    "booking_time": "2026-01-19T10:12:30.029418",
+    "status": "confirmed"
+  },
+  {
+    "id": "BK5F3AF60E",
+    "trip_id": "T0651",
+    "seat_ids": [
+      "T1-A04"
+    ],
+    "customer_name": "qqwqwq",
+    "customer_phone": "12121212",
+    "customer_cccd": "12121212121",
+    "uploaded_files": [],
+    "booking_time": "2026-01-19T10:16:43.212565",
+    "status": "confirmed"
+  }
+]

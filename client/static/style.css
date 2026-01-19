@@ -52,6 +52,100 @@ body {
     color: #166534;
 }
 
+/* Help Video Button */
+.btn-help {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: none;
+    border-radius: 20px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.btn-help:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.btn-help svg {
+    width: 18px;
+    height: 18px;
+}
+
+/* Video Modal */
+.video-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.8);
+    z-index: 10000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    animation: fadeIn 0.3s ease-in;
+}
+
+.video-modal-content {
+    background: white;
+    border-radius: 16px;
+    max-width: 900px;
+    width: 90%;
+    max-height: 90vh;
+    overflow: hidden;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+}
+
+.video-modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 25px;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.video-modal-header h3 {
+    margin: 0;
+    font-size: 20px;
+    color: #1a202c;
+}
+
+.video-modal-close {
+    background: none;
+    border: none;
+    font-size: 32px;
+    color: #6b7280;
+    cursor: pointer;
+    padding: 0;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: all 0.2s;
+}
+
+.video-modal-close:hover {
+    background: #f3f4f6;
+    color: #1a202c;
+}
+
+.video-modal-body {
+    padding: 25px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
 .status-dot {
     width: 8px;
     height: 8px;
@@ -513,6 +607,120 @@ body {
     font-size: 16px;
 }
 
+/* Feature Badge */
+.feature-badge {
+    display: inline-block;
+    padding: 6px 12px;
+    background: white;
+    border-radius: 20px;
+    font-size: 13px;
+    color: #166534;
+    border: 1px solid #bbf7d0;
+    font-weight: 500;
+}
+
+/* Features Panel */
+.features-panel {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 16px;
+    padding: 0;
+    margin-bottom: 25px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    overflow: hidden;
+    transition: all 0.3s ease;
+}
+
+.features-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 18px 25px;
+    background: rgba(255, 255, 255, 0.1);
+    cursor: pointer;
+    user-select: none;
+}
+
+.features-header h3 {
+    margin: 0;
+    color: white;
+    font-size: 18px;
+    font-weight: 600;
+}
+
+.features-toggle {
+    background: rgba(255, 255, 255, 0.2);
+    border: none;
+    color: white;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    transition: all 0.3s;
+}
+
+.features-toggle:hover {
+    background: rgba(255, 255, 255, 0.3);
+    transform: scale(1.1);
+}
+
+.features-content {
+    padding: 20px 25px;
+    background: white;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 20px;
+    max-height: 500px;
+    overflow-y: auto;
+    transition: all 0.3s ease;
+}
+
+.features-content.collapsed {
+    display: none;
+}
+
+.feature-item {
+    display: flex;
+    gap: 15px;
+    padding: 15px;
+    background: #f9fafb;
+    border-radius: 12px;
+    border-left: 4px solid #667eea;
+    transition: all 0.3s;
+}
+
+.feature-item:hover {
+    background: #f3f4f6;
+    transform: translateX(5px);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.feature-icon {
+    font-size: 32px;
+    flex-shrink: 0;
+}
+
+.feature-info {
+    flex: 1;
+}
+
+.feature-info strong {
+    display: block;
+    color: #1a202c;
+    font-size: 16px;
+    margin-bottom: 5px;
+}
+
+.feature-info p {
+    margin: 0;
+    color: #6b7280;
+    font-size: 14px;
+    line-height: 1.5;
+}
+
 /* Responsive */
 @media (max-width: 768px) {
     .main-content {
@@ -530,5 +738,19 @@ body {
     
     .seats-grid {
         grid-template-columns: repeat(4, 1fr);
+    }
+    
+    .features-content {
+        grid-template-columns: 1fr;
+        gap: 15px;
+        padding: 15px;
+    }
+    
+    .features-header {
+        padding: 15px 20px;
+    }
+    
+    .features-header h3 {
+        font-size: 16px;
     }
 }

@@ -15,10 +15,11 @@ from typing import Dict, List, Optional
 from threading import Lock
 from concurrent.futures import ThreadPoolExecutor
 import copy
+import threading
 
 
 class BookingManager:
-    def __init__(self, data_dir: str):
+    def __init__(self, data_dir: str, email_service=None):
         self.data_dir = data_dir
         self.bookings_dir = os.path.join(data_dir, 'bookings')
         self.clients_file = os.path.join(data_dir, 'clients.json') # Optimized to JSONL
@@ -28,6 +29,9 @@ class BookingManager:
         
         # OPTIMIZATION: Async Disk Write
         self._write_executor = ThreadPoolExecutor(max_workers=2)
+        
+        # Email service (optional)
+        self.email_service = email_service
         
         self.init_storage()
         self.load_clients()
@@ -112,7 +116,8 @@ class BookingManager:
         self._write_executor.submit(self._async_save_customer, info_copy)
 
     def create_booking(self, trip_id: str, seat_ids: List[str], 
-                      customer_info: Dict, uploaded_files: List[str] = None) -> Dict:
+                      customer_info: Dict, uploaded_files: List[str] = None,
+                      trip_info: Dict = None, route_info: Dict = None) -> Dict:
         """Tạo đơn đặt vé mới - OPTIMIZED với async disk write"""
         # Validate customer_info
         if not isinstance(customer_info, dict):
@@ -143,6 +148,10 @@ class BookingManager:
         # 2. Save Customer (Async - không block)
         self.save_customer(customer_info)
         
+        # 3. Gửi email xác nhận (nếu có email và email_service)
+        if self.email_service and customer_info.get('email'):
+            self._send_confirmation_email(booking_id, customer_info, seat_ids, trip_info, route_info)
+        
         print(f"[Booking] Đã tạo đơn {booking_id} cho chuyến {trip_id}")
         
         return {
@@ -150,3 +159,34 @@ class BookingManager:
             'booking_id': booking_id,
             'message': 'Đặt vé thành công'
         }
+    
+    def _send_confirmation_email(self, booking_id: str, customer_info: Dict, 
+                                 seat_ids: List[str], trip_info: Dict = None, 
+                                 route_info: Dict = None):
+        """Gửi email xác nhận trong background thread"""
+        def send_email():
+            try:
+                # Tính tổng tiền (giá mỗi ghế * số ghế)
+                total_price = 0
+                if route_info and 'base_price' in route_info:
+                    total_price = route_info['base_price'] * len(seat_ids)
+                
+                email_data = {
+                    'booking_id': booking_id,
+                    'customer_name': customer_info['name'],
+                    'from_city': route_info.get('from_city', 'N/A') if route_info else 'N/A',
+                    'to_city': route_info.get('to_city', 'N/A') if route_info else 'N/A',
+                    'date': trip_info.get('date', 'N/A') if trip_info else 'N/A',
+                    'departure_time': trip_info.get('departure_time', 'N/A') if trip_info else 'N/A',
+                    'bus_code': trip_info.get('bus_code', 'N/A') if trip_info else 'N/A',
+                    'bus_type': trip_info.get('bus_type', 'Giường nằm') if trip_info else 'Giường nằm',
+                    'seats': seat_ids,
+                    'total_price': total_price
+                }
+                
+                self.email_service.send_booking_confirmation(customer_info['email'], email_data)
+            except Exception as e:
+                print(f"[BookingManager] Lỗi gửi email: {e}")
+        
+        # Gửi trong thread riêng để không block
+        threading.Thread(target=send_email, daemon=True).start()

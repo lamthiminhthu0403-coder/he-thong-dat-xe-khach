@@ -1,0 +1,202 @@
+{
+  "T1-A01": {
+    "status": "available",
+    "locked_by": null,
+    "locked_at": null
+  },
+  "T1-A02": {
+    "status": "available",
+    "locked_by": null,
+    "locked_at": null
+  },
+  "T1-A03": {
+    "status": "available",
+    "locked_by": null,
+    "locked_at": null
+  },
+  "T1-A04": {
+    "status": "booked",
+    "locked_by": "383b2a8a-f19e-4053-a711-19647355a5c5",
+    "locked_at": 1768794072.3715932
+  },
+  "T1-A05": {
+    "status": "available",
+    "locked_by": null,
+    "locked_at": null
+  },
+  "T1-A06": {
+    "status": "available",
+    "locked_by": null,
+    "locked_at": null
+  },
+  "T1-A07": {
+    "status": "available",
+    "locked_by": null,
+    "locked_at": null
+  },
+  "T1-A08": {
+    "status": "available",
+    "locked_by": null,
+    "locked_at": null
+  },
+  "T1-A09": {
+    "status": "available",
+    "locked_by": null,
+    "locked_at": null
+  },
+  "T1-A10": {
+    "status": "available",
+    "locked_by": null,
+    "locked_at": null
+  },
+  "T1-A11": {
+    "status": "available",
+    "locked_by": null,
+    "locked_at": null
+  },
+  "T1-A12": {
+    "status": "available",
+    "locked_by": null,
+    "locked_at": null
+  },
+  "T1-A13": {
+    "status": "available",
+    "locked_by": null,
+    "locked_at": null
+  },
+  "T1-A14": {
+    "status": "available",
+    "locked_by": null,
+    "locked_at": null
+  },
+  "T1-A15": {
+    "status": "available",
+    "locked_by": null,
+    "locked_at": null
+  },
+  "T1-A16": {
+    "status": "available",
+    "locked_by": null,
+    "locked_at": null
+  },
+  "T1-A17": {
+    "status": "available",
+    "locked_by": null,
+    "locked_at": null
+  },
+  "T1-A18": {
+    "status": "available",
+    "locked_by": null,
+    "locked_at": null
+  },
+  "T1-A19": {
+    "status": "available",
+    "locked_by": null,
+    "locked_at": null
+  },
+  "T1-A20": {
+    "status": "available",
+    "locked_by": null,
+    "locked_at": null
+  },
+  "T2-B01": {
+    "status": "available",
+    "locked_by": null,
+    "locked_at": null
+  },
+  "T2-B02": {
+    "status": "available",
+    "locked_by": null,
+    "locked_at": null
+  },
+  "T2-B03": {
+    "status": "available",
+    "locked_by": null,
+    "locked_at": null
+  },
+  "T2-B04": {
+    "status": "available",
+    "locked_by": null,
+    "locked_at": null
+  },
+  "T2-B05": {
+    "status": "available",
+    "locked_by": null,
+    "locked_at": null
+  },
+  "T2-B06": {
+    "status": "available",
+    "locked_by": null,
+    "locked_at": null
+  },
+  "T2-B07": {
+    "status": "available",
+    "locked_by": null,
+    "locked_at": null
+  },
+  "T2-B08": {
+    "status": "available",
+    "locked_by": null,
+    "locked_at": null
+  },
+  "T2-B09": {
+    "status": "available",
+    "locked_by": null,
+    "locked_at": null
+  },
+  "T2-B10": {
+    "status": "available",
+    "locked_by": null,
+    "locked_at": null
+  },
+  "T2-B11": {
+    "status": "available",
+    "locked_by": null,
+    "locked_at": null
+  },
+  "T2-B12": {
+    "status": "available",
+    "locked_by": null,
+    "locked_at": null
+  },
+  "T2-B13": {
+    "status": "available",
+    "locked_by": null,
+    "locked_at": null
+  },
+  "T2-B14": {
+    "status": "available",
+    "locked_by": null,
+    "locked_at": null
+  },
+  "T2-B15": {
+    "status": "available",
+    "locked_by": null,
+    "locked_at": null
+  },
+  "T2-B16": {
+    "status": "available",
+    "locked_by": null,
+    "locked_at": null
+  },
+  "T2-B17": {
+    "status": "available",
+    "locked_by": null,
+    "locked_at": null
+  },
+  "T2-B18": {
+    "status": "available",
+    "locked_by": null,
+    "locked_at": null
+  },
+  "T2-B19": {
+    "status": "available",
+    "locked_by": null,
+    "locked_at": null
+  },
+  "T2-B20": {
+    "status": "available",
+    "locked_by": null,
+    "locked_at": null
+  }
+}

@@ -1,0 +1,67 @@
+[
+  {
+    "id": "BK3F5D92DB",
+    "trip_id": "T0649",
+    "seat_ids": [
+      "T1-A02"
+    ],
+    "customer_name": "Minh Thư",
+    "customer_phone": "0955673201",
+    "customer_cccd": "0400123456758",
+    "uploaded_files": [],
+    "booking_time": "2026-01-19T09:21:34.210594",
+    "status": "confirmed"
+  },
+  {
+    "id": "BK17F408F3",
+    "trip_id": "T0649",
+    "seat_ids": [
+      "T1-A03"
+    ],
+    "customer_name": "Minh Thư",
+    "customer_phone": "0399996652",
+    "customer_cccd": "072193004229",
+    "uploaded_files": [],
+    "booking_time": "2026-01-19T09:58:46.984802",
+    "status": "confirmed"
+  },
+  {
+    "id": "BK4421AEDC",
+    "trip_id": "T0649",
+    "seat_ids": [
+      "T1-A04"
+    ],
+    "customer_name": "sdsd",
+    "customer_phone": "232323",
+    "customer_cccd": "23232323232",
+    "uploaded_files": [],
+    "booking_time": "2026-01-19T10:01:57.494292",
+    "status": "confirmed"
+  },
+  {
+    "id": "BK03789DA6",
+    "trip_id": "T0649",
+    "seat_ids": [
+      "T1-A05"
+    ],
+    "customer_name": "dddd",
+    "customer_phone": "232323",
+    "customer_cccd": "232323232",
+    "uploaded_files": [],
+    "booking_time": "2026-01-19T10:06:39.854733",
+    "status": "confirmed"
+  },
+  {
+    "id": "BKC0F93BF0",
+    "trip_id": "T0649",
+    "seat_ids": [
+      "T1-A01"
+    ],
+    "customer_name": "Minh Thư",
+    "customer_phone": "0955673201",
+    "customer_cccd": "0400123456758",
+    "uploaded_files": [],
+    "booking_time": "2026-01-19T10:46:46.997577",
+    "status": "confirmed"
+  }
+]

@@ -208,9 +208,20 @@ function showStep(stepNumber) {
     });
 
     // Hiện step được chọn
-    const stepEl = document.getElementById(`step${stepNumber}`);
+    // Hỗ trợ cả số (1,2,3,4,5) và string ('Success')
+    let stepId;
+    if (stepNumber === 'Success' || stepNumber === 'success') {
+        stepId = 'stepSuccess';
+    } else {
+        stepId = `step${stepNumber}`;
+    }
+    
+    const stepEl = document.getElementById(stepId);
     if (stepEl) {
         stepEl.style.display = 'block';
+        console.log(`[UI] Hiển thị step: ${stepId}`);
+    } else {
+        console.error(`[UI] Không tìm thấy element: ${stepId}`);
     }
 }
 
@@ -556,8 +567,15 @@ async function handleBookingSubmit(event) {
     const customerInfo = {
         name: document.getElementById('customerName').value.trim(),
         phone: document.getElementById('customerPhone').value.trim(),
-        cccd: document.getElementById('customerCCCD').value.trim()
+        cccd: document.getElementById('customerCCCD').value.trim(),
+        email: document.getElementById('customerEmail').value.trim()
     };
+    
+    // Validate email format nếu có nhập
+    if (customerInfo.email && !customerInfo.email.includes('@')) {
+        showNotification('Email không hợp lệ', 'warning');
+        return;
+    }
 
     // Validate
     if (!customerInfo.name || !customerInfo.phone || !customerInfo.cccd) {
@@ -565,47 +583,232 @@ async function handleBookingSubmit(event) {
         return;
     }
 
-    // Gửi request đặt vé
-    const result = await bookSeats(state.selectedTrip, state.selectedSeats, customerInfo);
+    // Disable button để tránh double submit
+    const submitBtn = event.target.querySelector('button[type="submit"]');
+    const originalBtnText = submitBtn ? submitBtn.textContent : '';
+    if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'Đang xử lý...';
+    }
 
-    if (result && result.success) {
-        // Upload files nếu có
-        const fileInput = document.getElementById('uploadFiles');
-        if (fileInput && fileInput.files.length > 0) {
-            for (const file of fileInput.files) {
-                await uploadFile(file, result.booking_id);
+    try {
+        console.log('[Booking] Đang gửi request đặt vé...', {
+            trip_id: state.selectedTrip,
+            seats: state.selectedSeats,
+            customer: customerInfo.name
+        });
+
+        // Gửi request đặt vé
+        const result = await bookSeats(state.selectedTrip, state.selectedSeats, customerInfo);
+
+        console.log('[Booking] Kết quả đặt vé:', result);
+        console.log('[Booking] Type của result:', typeof result);
+        console.log('[Booking] result.success:', result?.success);
+        console.log('[Booking] result.booking_id:', result?.booking_id);
+
+        // Kiểm tra response có đúng format không
+        if (!result) {
+            console.error('[Booking] ❌ Response rỗng!');
+            playNotificationSound('error');
+            showNotification('Không nhận được phản hồi từ server', 'error');
+            if (submitBtn) {
+                submitBtn.disabled = false;
+                submitBtn.textContent = originalBtnText;
             }
+            return;
         }
 
-        // Hiển thị kết quả
-        displayBookingSuccess(result, customerInfo);
-    } else {
-        showNotification(result?.message || 'Đặt vé thất bại', 'error');
+        // Kiểm tra success (có thể là true, "true", hoặc truthy)
+        const isSuccess = result && (result.success === true || result.success === 'true' || result.booking_id);
+        
+        if (isSuccess) {
+            console.log('[Booking] ✅ Đặt vé thành công, chuẩn bị hiển thị màn hình success...');
+            
+            // Reset button ngay lập tức (trước khi hiển thị success)
+            if (submitBtn) {
+                submitBtn.disabled = false;
+                submitBtn.textContent = originalBtnText;
+            }
+            
+            // Phát âm thanh thành công
+            playNotificationSound('success');
+            
+            // Upload files nếu có (async, không block)
+            const fileInput = document.getElementById('uploadFiles');
+            if (fileInput && fileInput.files.length > 0) {
+                console.log('[Booking] Đang upload files...');
+                // Upload trong background, không block UI
+                Promise.all(Array.from(fileInput.files).map(file => 
+                    uploadFile(file, result.booking_id)
+                )).catch(err => {
+                    console.error('[Booking] Lỗi upload file:', err);
+                });
+            }
+
+            // Hiển thị kết quả NGAY LẬP TỨC - Không đợi gì cả
+            console.log('[Booking] Gọi displayBookingSuccess...');
+            
+            // Dùng requestAnimationFrame để đảm bảo DOM đã sẵn sàng
+            requestAnimationFrame(() => {
+                displayBookingSuccess(result, customerInfo);
+            });
+        } else {
+            // Phát âm âm thanh lỗi
+            playNotificationSound('error');
+            const errorMsg = result?.message || 'Đặt vé thất bại';
+            console.error('[Booking] Đặt vé thất bại:', errorMsg);
+            showNotification(errorMsg, 'error');
+            
+            // Enable lại button nếu lỗi
+            if (submitBtn) {
+                submitBtn.disabled = false;
+                submitBtn.textContent = originalBtnText;
+            }
+        }
+    } catch (error) {
+        console.error('[Booking] Lỗi exception:', error);
+        playNotificationSound('error');
+        showNotification('Có lỗi xảy ra khi đặt vé: ' + error.message, 'error');
+        
+        // Enable lại button nếu lỗi
+        if (submitBtn) {
+            submitBtn.disabled = false;
+            submitBtn.textContent = originalBtnText;
+        }
     }
 }
 
 function displayBookingSuccess(result, customerInfo) {
+    console.log('[Booking] ===== displayBookingSuccess BẮT ĐẦU =====');
+    console.log('[Booking] Result:', result);
+    console.log('[Booking] Customer Info:', customerInfo);
+    
     const resultEl = document.getElementById('bookingResult');
     const price = state.routeInfo?.base_price || 0;
     const totalPrice = price * state.selectedSeats.length;
 
+    if (!resultEl) {
+        console.error('[Booking] ❌ Không tìm thấy element bookingResult');
+        alert('Lỗi: Không tìm thấy phần tử hiển thị kết quả. Mã vé: ' + (result?.booking_id || 'N/A'));
+        return;
+    }
+
+    console.log('[Booking] Đang điền thông tin vào bookingResult...');
     resultEl.innerHTML = `
-        <p><strong>Mã vé:</strong> <span style="color: #667eea; font-size: 24px;">${result.booking_id}</span></p>
+        <p><strong>Mã vé:</strong> <span style="color: #667eea; font-size: 24px;">${result.booking_id || 'N/A'}</span></p>
         <p><strong>Khách hàng:</strong> ${customerInfo.name}</p>
         <p><strong>Số điện thoại:</strong> ${customerInfo.phone}</p>
         <p><strong>CCCD:</strong> ${customerInfo.cccd}</p>
+        ${customerInfo.email ? `<p><strong>Email:</strong> ${customerInfo.email}</p>` : ''}
         <hr style="margin: 15px 0; border-color: #e5e7eb;">
-        <p><strong>Tuyến:</strong> ${state.routeInfo?.from_city} → ${state.routeInfo?.to_city}</p>
-        <p><strong>Ngày:</strong> ${formatDate(state.selectedDate)}</p>
+        <p><strong>Tuyến:</strong> ${state.routeInfo?.from_city || 'N/A'} → ${state.routeInfo?.to_city || 'N/A'}</p>
+        <p><strong>Ngày:</strong> ${state.selectedDate ? formatDate(state.selectedDate) : 'N/A'}</p>
         <p><strong>Giờ:</strong> ${state.tripInfo?.departure_time || 'N/A'}</p>
         <p><strong>Xe:</strong> ${state.tripInfo?.bus_code || 'N/A'}</p>
-        <p><strong>Ghế:</strong> ${state.selectedSeats.join(', ')}</p>
+        <p><strong>Ghế:</strong> ${state.selectedSeats.length > 0 ? state.selectedSeats.join(', ') : 'N/A'}</p>
         <p style="font-size: 18px; color: #22c55e; margin-top: 10px;">
             <strong>Tổng tiền: ${formatPrice(totalPrice)}</strong>
         </p>
     `;
+    console.log('[Booking] ✅ Đã điền thông tin vào bookingResult');
 
-    showStep('Success');
+    // Ẩn tất cả các step trước - ĐẢM BẢO step5 bị ẩn
+    console.log('[Booking] Đang ẩn tất cả các step...');
+    const allSteps = document.querySelectorAll('.step');
+    console.log('[Booking] Tìm thấy', allSteps.length, 'steps');
+    
+    // Đặc biệt đảm bảo step5 bị ẩn (màn hình form khách hàng)
+    const step5 = document.getElementById('step5');
+    if (step5) {
+        console.log('[Booking] Đang force ẩn step5...');
+        step5.style.display = 'none';
+        step5.style.setProperty('display', 'none', 'important');
+        step5.setAttribute('style', 'display: none !important');
+        console.log('[Booking] ✅ Đã ẩn step5');
+    }
+    
+    // Ẩn tất cả các step khác
+    allSteps.forEach(step => {
+        const stepId = step.id || 'unknown';
+        if (stepId !== 'stepSuccess') {  // Không ẩn stepSuccess
+            step.style.display = 'none';
+            step.style.setProperty('display', 'none', 'important');
+            step.setAttribute('style', 'display: none !important');
+            console.log('[Booking] Đã ẩn step:', stepId);
+        }
+    });
+    
+    // Hiển thị step success - Đợi DOM ready
+    setTimeout(() => {
+        console.log('[Booking] Đang tìm element stepSuccess...');
+        const successStep = document.getElementById('stepSuccess');
+        
+        if (successStep) {
+            console.log('[Booking] ✅ Tìm thấy stepSuccess, đang hiển thị...');
+            
+            // ĐẢM BẢO step5 bị ẩn trước
+            if (step5) {
+                step5.style.setProperty('display', 'none', 'important');
+                step5.style.display = 'none';
+                step5.setAttribute('style', 'display: none !important');
+            }
+            
+            // Force ẩn tất cả step khác một lần nữa
+            allSteps.forEach(step => {
+                if (step.id !== 'stepSuccess') {
+                    step.style.setProperty('display', 'none', 'important');
+                    step.style.display = 'none';
+                }
+            });
+            
+            // Hiển thị stepSuccess
+            successStep.style.setProperty('display', 'block', 'important');
+            successStep.style.display = 'block';
+            successStep.setAttribute('style', 'display: block !important');
+            successStep.classList.remove('hidden');
+            successStep.removeAttribute('hidden');
+            
+            // Kiểm tra và force lại
+            const checkAndForce = () => {
+                const computedStyle = window.getComputedStyle(successStep);
+                const step5Style = step5 ? window.getComputedStyle(step5) : null;
+                
+                console.log('[Booking] Computed display stepSuccess:', computedStyle.display);
+                console.log('[Booking] Computed display step5:', step5Style?.display);
+                
+                if (computedStyle.display === 'none') {
+                    console.warn('[Booking] ⚠️ StepSuccess bị ẩn, force lại...');
+                    successStep.style.setProperty('display', 'block', 'important');
+                }
+                
+                if (step5 && step5Style && step5Style.display !== 'none') {
+                    console.warn('[Booking] ⚠️ Step5 đang hiển thị, force ẩn...');
+                    step5.style.setProperty('display', 'none', 'important');
+                }
+            };
+            
+            // Kiểm tra nhiều lần
+            checkAndForce();
+            setTimeout(checkAndForce, 50);
+            setTimeout(checkAndForce, 100);
+            setTimeout(checkAndForce, 200);
+            setTimeout(checkAndForce, 500);
+            
+            console.log('[Booking] ✅ Đã set display block cho stepSuccess');
+            
+            // Scroll to top
+            setTimeout(() => {
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+                console.log('[Booking] ✅ Đã scroll to top');
+            }, 100);
+            
+        } else {
+            console.error('[Booking] ❌ KHÔNG tìm thấy element stepSuccess trong DOM!');
+            alert('Đặt vé thành công!\n\nMã vé: ' + (result?.booking_id || 'N/A') + '\n\nVui lòng refresh trang để xem chi tiết.');
+        }
+    }, 0); // Đợi 0ms để đảm bảo DOM đã sẵn sàng
+    
+    console.log('[Booking] ===== displayBookingSuccess KẾT THÚC =====');
 }
 
 // ============================
@@ -623,6 +826,21 @@ function formatDate(dateStr) {
     const date = new Date(dateStr);
     const dayNames = ['Chủ nhật', 'Thứ 2', 'Thứ 3', 'Thứ 4', 'Thứ 5', 'Thứ 6', 'Thứ 7'];
     return `${dayNames[date.getDay()]}, ${date.getDate()}/${date.getMonth() + 1}/${date.getFullYear()}`;
+}
+
+function playNotificationSound(type) {
+    /** Phát âm thanh thông báo */
+    try {
+        const audio = new Audio(`/static/audio/${type}.mp3`);
+        audio.volume = 0.5; // 50% volume
+        audio.play().catch(err => {
+            // Nếu không có file audio, bỏ qua (không hiển thị lỗi)
+            console.log(`[Audio] Không thể phát âm thanh ${type}.mp3 (file không tồn tại hoặc user chưa tương tác)`);
+        });
+    } catch (error) {
+        // Bỏ qua nếu không có file audio
+        console.log(`[Audio] Không thể phát âm thanh: ${error.message}`);
+    }
 }
 
 function showNotification(message, type = 'info') {
@@ -693,6 +911,142 @@ async function handleCityChange() {
 // INITIALIZATION
 // ============================
 
+// Features Panel Functions
+function toggleFeaturesPanel() {
+    const content = document.getElementById('featuresContent');
+    const icon = document.getElementById('featuresToggleIcon');
+    
+    if (content && icon) {
+        if (content.classList.contains('collapsed')) {
+            content.classList.remove('collapsed');
+            icon.textContent = '▼';
+        } else {
+            content.classList.add('collapsed');
+            icon.textContent = '▶';
+        }
+    }
+}
+
+// Video Help Functions
+function showHelpVideo() {
+    const modal = document.getElementById('videoModal');
+    const video = document.getElementById('helpVideo');
+    const videoStatus = document.getElementById('videoStatus');
+    const videoError = document.getElementById('videoError');
+    
+    if (modal) {
+        modal.style.display = 'flex';
+        
+        if (video) {
+            // Ẩn error message
+            if (videoError) {
+                videoError.style.display = 'none';
+            }
+            
+            // Reset video và thử load từ nhiều nguồn
+            const videoSources = [
+                '/static/videos/guide.mp4',
+                '/api/video/guide'
+            ];
+            
+            let currentSourceIndex = 0;
+            
+            const tryLoadVideo = () => {
+                if (currentSourceIndex < videoSources.length) {
+                    const src = videoSources[currentSourceIndex];
+                    console.log(`[Video] Đang thử load từ: ${src}`);
+                    video.src = src;
+                    video.load();
+                    currentSourceIndex++;
+                } else {
+                    console.error('[Video] ❌ Đã thử tất cả sources nhưng không thành công');
+                    if (videoError) {
+                        videoError.style.display = 'block';
+                    }
+                    if (videoStatus) {
+                        videoStatus.textContent = '⚠️ Không thể tải video';
+                        videoStatus.style.color = '#ef4444';
+                    }
+                }
+            };
+            
+            // Remove old listeners nếu có
+            video.removeEventListener('loadeddata', video._onLoadedData);
+            video.removeEventListener('error', video._onError);
+            video.removeEventListener('loadstart', video._onLoadStart);
+            
+            // Event listeners để check video loading
+            video._onLoadedData = () => {
+                console.log('[Video] ✅ Video đã load thành công từ:', video.src);
+                if (videoStatus) {
+                    videoStatus.textContent = 'Video hướng dẫn sử dụng hệ thống đặt vé';
+                    videoStatus.style.color = '#22c55e';
+                }
+                if (videoError) {
+                    videoError.style.display = 'none';
+                }
+            };
+            
+            video._onError = (e) => {
+                console.error('[Video] ❌ Lỗi load video từ:', video.src);
+                console.error('[Video] Error details:', video.error);
+                
+                // Thử source tiếp theo
+                setTimeout(() => {
+                    tryLoadVideo();
+                }, 500);
+            };
+            
+            video._onLoadStart = () => {
+                console.log('[Video] Đang load video từ:', video.src);
+                if (videoStatus) {
+                    videoStatus.textContent = 'Đang tải video...';
+                    videoStatus.style.color = '#6b7280';
+                }
+            };
+            
+            video.addEventListener('loadeddata', video._onLoadedData);
+            video.addEventListener('error', video._onError);
+            video.addEventListener('loadstart', video._onLoadStart);
+            
+            // Bắt đầu load
+            tryLoadVideo();
+        }
+    }
+}
+
+function closeHelpVideo() {
+    const modal = document.getElementById('videoModal');
+    const video = document.getElementById('helpVideo');
+    
+    if (modal) {
+        modal.style.display = 'none';
+        // Pause video khi đóng modal
+        if (video) {
+            video.pause();
+        }
+    }
+}
+
+// Đóng modal khi click bên ngoài
+document.addEventListener('DOMContentLoaded', () => {
+    const modal = document.getElementById('videoModal');
+    if (modal) {
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) {
+                closeHelpVideo();
+            }
+        });
+    }
+    
+    // Đóng bằng phím ESC
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+            closeHelpVideo();
+        }
+    });
+});
+
 // Expose all critical UI functions to window for onclick compatibility
 window.selectRoute = selectRoute;
 window.selectDate = selectDate;
@@ -700,6 +1054,9 @@ window.selectTrip = selectTrip;
 window.handleSeatClick = handleSeatClick;
 window.goBack = goBack;
 window.continueToBooking = continueToBooking;
+window.showHelpVideo = showHelpVideo;
+window.closeHelpVideo = closeHelpVideo;
+window.toggleFeaturesPanel = toggleFeaturesPanel;
 
 document.addEventListener('DOMContentLoaded', async () => {
     console.log('🚌 Bus Booking System - Khởi động (App v4)');
